@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+// src/components/ChatFloat.tsx
+import { useEffect, useRef, useState } from "react";
+import "./chatbot.css";
 
 type Msg = { role: "user" | "bot"; text: string; at: number };
 type Course = {
@@ -33,40 +35,30 @@ export default function ChatFloat() {
     },
   ]);
 
-  // 버튼: 카카오 버튼과 같은 크기/스타일
-    const fabStyle: React.CSSProperties = useMemo(
-    () => ({
-        position: "fixed",
-        right: 24,
-        bottom: 84,
-        zIndex: 9999,
-        padding: "12px 16px",
-        borderRadius: 999,
-        // ✅ 브랜드 블루 그라데이션
-        background: "linear-gradient(90deg, #0351fa 0%, #0268f6 100%)",
-        border: "1px solid #0147e9",
-        boxShadow: "0 6px 16px rgba(3, 81, 250, .25)",
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: 14,
-        lineHeight: "20px",
-        cursor: "pointer",
-        userSelect: "none",
-    }),
-    []
-    );
-
-
-  // 작은 ‘휴대폰’ 프레임
+  // 자동 스크롤용
   const panelRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const close = () => setOpen(false);
+
+  // ESC 닫기 + SpeedDial 전역 이벤트로 열기
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    const onOpen = () => setOpen(true);
+    window.addEventListener("YJ_OPEN_CHAT", onOpen as unknown as EventListener);
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("YJ_OPEN_CHAT", onOpen as unknown as EventListener);
+    };
   }, []);
+
+  // 새 메시지/typing/열릴 때 바닥으로 스크롤
+  useEffect(() => {
+    if (!bodyRef.current) return;
+    bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [msgs, busy, open]);
 
   async function send() {
     const q = input.trim();
@@ -84,7 +76,6 @@ export default function ChatFloat() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: ChatApiResponse = await res.json();
 
-      // 본문 + (있다면) 코스 카드 요약 붙이기
       let finalText = data.answer || "";
       if (Array.isArray(data.courses) && data.courses.length > 0) {
         const lines = data.courses.slice(0, 5).map((c, i) => {
@@ -98,13 +89,12 @@ export default function ChatFloat() {
       }
 
       setMsgs((m) => [...m, { role: "bot", text: finalText, at: Date.now() }]);
-    } catch (err: any) {
+    } catch {
       setMsgs((m) => [
         ...m,
         {
           role: "bot",
-          text:
-            "서버와 통신 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요 🙏",
+          text: "서버와 통신 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요 🙏",
           at: Date.now(),
         },
       ]);
@@ -113,23 +103,26 @@ export default function ChatFloat() {
     }
   }
 
-  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+  // 바꿔치기
+function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  // 한글/일본어 등 IME 조합 상태면 전송 금지
+  // Chrome/Edge/Safari: e.nativeEvent.isComposing
+  // 일부 브라우저(구형) 호환: keyCode === 229
+  const composing =
+    (e.nativeEvent as any).isComposing || (e as any).isComposing || e.keyCode === 229;
+
+  if (composing) return;
+
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    send();
   }
+}
+
 
   return (
     <>
-      {/* 플로팅 챗봇 버튼 */}
-      <button
-        aria-label="YouthJob 챗봇 열기"
-        style={fabStyle}
-        onClick={() => setOpen((v) => !v)}
-      >
-        {open ? "창 닫기" : "YouthJob 챗봇"}
-      </button>
+      {/* 기존의 'YouthJob 챗봇' 플로팅 버튼은 제거 → SpeedDial이 대신 엽니다 */}
 
       {/* 휴대폰 프레임 패널 */}
       {open && (
@@ -146,19 +139,39 @@ export default function ChatFloat() {
             </button>
           </div>
 
-          <div className="yj-chat-body">
+          <div ref={bodyRef} className="yj-chat-body" aria-live="polite">
             {msgs.map((m, i) => (
               <div
                 key={i}
-                className={`yj-bubble ${m.role === "user" ? "me" : "bot"}`}
+                className={`yj-msg ${m.role === "user" ? "yj-msg--user" : "yj-msg--bot"}`}
               >
-                {m.text.split("\n").map((line, idx) => (
-                  <p key={idx} className="yj-line">
-                    {line}
-                  </p>
-                ))}
+                {m.role === "bot" ? (
+                  <img
+                    className="yj-avatar"
+                    src="/assets/profile.png"
+                    alt="YouthJob 챗봇"
+                  />
+                ) : (
+                  <img
+                    className="yj-avatar yj-avatar--me"
+                    src="/assets/chatprofile.png"
+                    alt="나"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/assets/profile.png";
+                    }}
+                  />
+                )}
+
+                <div className={`yj-bubble ${m.role === "user" ? "me" : "bot"}`}>
+                  {m.text.split("\n").map((line, idx) => (
+                    <p key={idx} className="yj-line">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
             ))}
+
             {busy && <div className="yj-typing">답변 작성 중…</div>}
           </div>
 

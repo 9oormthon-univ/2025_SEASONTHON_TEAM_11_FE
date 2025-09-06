@@ -10,6 +10,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import MyPage from "./pages/MyPage"; 
+import YouthPolicy from "./pages/YouthPolicy";
+import YouthPolicyDetail from "./pages/YouthPolicyDetail";
+import CookiePolicy from "./pages/CookiePolicy";
 
 export default function Root() {
   return (
@@ -25,6 +28,9 @@ export default function Root() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/youthpolicy" element={<YouthPolicy />} />
+        <Route path="/youth-policies/:plcyNo" element={<YouthPolicyDetail />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
       </Routes>
     </BrowserRouter>
   );
