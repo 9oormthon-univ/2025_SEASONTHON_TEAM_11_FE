@@ -1,0 +1,257 @@
+:root {
+  --bg: #0b1020;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --brand: #2563eb;
+  --brand-weak: #dbeafe;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
+}
+
+
+* { box-sizing: border-box; }
+
+.yj-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.yj-section { padding: 64px 0; }
+.yj-section--cards { padding-top: 32px; }
+
+.yj-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;               /* 16 → 36 */
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .yj-cards { grid-template-columns: 1fr; }
+}
+
+.yj-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;       /* 얇은 라인 */
+  border-radius: 24px;             /* 더 둥글게 */
+  padding: 32px;                   /* 넉넉한 내부 여백 */
+  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.06); /* 미세한 그림자 */
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.yj-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 16px 40px rgba(2,6,23,.10);
+  transform: translateY(-2px);
+}
+
+.yj-card__icon {
+  margin-bottom: 20px;
+  line-height: 0;                  /* 이미지 주변 여백 제거 */
+}
+.yj-card__icon img {
+  width: 90px;                     /* Figma 90×69 근접 */
+  height: auto;
+  display: block;
+  filter: grayscale(100%);         /* 회색 톤(선명 SVG면 불필요) */
+  opacity: .95;
+}
+.yj-card__title {
+  margin: 0 0 8px;
+  font-size: 24px;                 /* 살짝 크게 */
+  font-weight: 800;                /* 두껍게 */
+  color: #0f172a;                  /* 진한 남색 */
+}
+.yj-card__desc {
+  margin: 0;
+  color: #6b7280;                  /* 회색 텍스트 */
+  line-height: 1.6;
+  font-size: 16px;
+}
+.yj-card__desc { margin: 0; color: var(--muted); }
+
+.yj-notice {
+  padding: 14px 18px;
+  background: var(--brand-weak);
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* 공용 버튼 */
+.yj-btn {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.yj-btn--primary { background: var(--brand); color: #fff; }
+.yj-btn--ghost { background: rgba(255,255,255,.85); color: var(--text); border-color: rgba(15,23,42,.12); }
+.yj-btn--primary:hover { filter: brightness(0.95); }
+.yj-btn--ghost:hover { background: #fff; }
+/* 화면 전체를 채우는 기본 세팅 */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+
+/* 레이아웃 래퍼: 세로 플렉스 */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 메인 컨텐츠가 남는 공간을 다 먹도록 */
+.app-main {
+  flex: 1;
+}
+
+/* Footer가 아래로 밀리도록(이미 yj-footer가 있다면 유지해도 OK) */
+.yj-footer {
+  margin-top: auto; /* 중요 */
+}
+
+/* ===== Floating Chat Panel (모바일 프레임) ===== */
+.yj-chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 96px; /* 챗봇/Kakao 버튼 위로 살짝 띄우기 */
+  width: 360px;           /* 모바일 폭 */
+  max-width: calc(100vw - 48px);
+  height: 600px;          /* 모바일 높이 느낌 */
+  max-height: calc(100vh - 160px);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10000;
+  animation: yj-pop .15s ease-out;
+}
+
+@keyframes yj-pop {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.yj-chat-head {
+  height: 52px;
+  background: linear-gradient(90deg, #0351fa, #0268f6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 12px 0 16px;
+}
+
+.yj-chat-title {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.yj-chat-x {
+  margin-left: auto;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  color: #fff;
+  border: 0; background: transparent;
+  font-size: 22px;
+  line-height: 22px;
+  cursor: pointer;
+}
+
+.yj-chat-x:hover { background: rgba(5, 65, 230, 0.12); }
+
+.yj-chat-body {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  background:
+    radial-gradient(1200px 300px at 80% -100px, rgba(255,220,64,.12), transparent 60%),
+    #f8fafc;
+}
+
+.yj-bubble {
+  max-width: 85%;
+  padding: 10px 12px;
+  margin: 6px 0;
+  border-radius: 16px;
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.yj-bubble.bot {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #000000;
+}
+
+.yj-bubble.me {
+  margin-left: auto;
+  background: #0351fa;
+  color: #fff;
+}
+
+.yj-line { margin: 2px 0; }
+
+.yj-typing {
+  margin: 8px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.yj-chat-input {
+  border-top: 1px solid #e5e7eb;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+}
+
+.yj-chat-input textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid #0253f5f2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  max-height: 160px;
+  outline: none;
+}
+
+.yj-chat-input textarea:focus {
+  border-color: #111827;
+}
+
+.yj-chat-input button {
+  flex: 0 0 auto;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 0;
+  background: #020eff;
+  color: #f8f8f8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.yj-chat-input button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* 작은 화면에서 패널 폭/높이 자동 조정 */
+@media (max-width: 420px) {
+  .yj-chat-panel {
+    right: 16px;
+    left: 16px;
+    width: auto;
+    height: 60vh;
+  }
+}

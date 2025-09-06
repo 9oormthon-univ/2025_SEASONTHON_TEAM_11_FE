@@ -1,2 +1,1 @@
-# 2025_SEASONTHON_TEAM_11_FE
 청년취업플랫폼 YouthJob
